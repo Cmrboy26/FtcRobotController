@@ -26,6 +26,8 @@ public class RobotMain {
     public Servo grabServo;
     public Servo spinServo;
 
+    private DcMotor.Direction direction = null;
+
     public void init(HardwareMap hwmap, Telemetry telemetryIn, DcMotor.Direction direction) {
         this.telemetry = telemetryIn;
         BLeft = hwmap.dcMotor.get("BLeft");
@@ -34,7 +36,25 @@ public class RobotMain {
         FRight = hwmap.dcMotor.get("FRight");
         RIntake = hwmap.dcMotor.get("RIntake");
         LIntake = hwmap.dcMotor.get("LIntake");
+
+        leftHook = hwmap.servo.get("leftHook");
+        rightHook = hwmap.servo.get("rightHook");
+        grabServo = hwmap.servo.get("grabServo");
+        spinServo = hwmap.servo.get("spinServo");
     }
+
+    public void RobotStuff (float speed, float direction, float strafe) {
+        float Magnitude = Math.abs(speed) + Math.abs(direction) + Math.abs(strafe);
+        if (Magnitude < 1) {
+            Magnitude = 1;
+        }
+        FLeft.setPower(scale(speed + direction + strafe, -Magnitude, Magnitude, -1, 1));
+        FRight.setPower(scale(speed - direction - strafe, -Magnitude, Magnitude, -1, 1));
+        BLeft.setPower(scale(speed + direction - strafe, -Magnitude, Magnitude, -1, 1));
+        BRight.setPower(scale(speed - direction + strafe, -Magnitude, Magnitude, -1, 1));
+    }
+
+
     public void stopAll() {
         BLeft.setPower(0);
         BRight.setPower(0);
