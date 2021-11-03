@@ -24,6 +24,6 @@ public class ImportantStuff {
     }
 
     public void stop() {
-        robotStuff.stop();
+        robotStuff.stopAll();
     }
 }
