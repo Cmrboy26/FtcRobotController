@@ -7,6 +7,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 import static com.qualcomm.robotcore.util.Range.scale;
@@ -56,23 +62,43 @@ public class RobotMain {
 
     private DcMotor.Direction direction = null;
 
-    //BNO055IMU imu;
+    BNO055IMU imu;
 
+    // State used for updating telemetry
+    Acceleration gravity;
+
+    Orientation angles;
+    Orientation lastAngles = new Orientation();
+    double globalAngle, power = .30, correction;
+    boolean aButton, bButton, touched;
+
+    double directionGyro;
+
+    Orientation roboterror;
+    double targetangle;
 
     public void init(HardwareMap hwmap, Telemetry telemetryIn, DcMotor.Direction direction) {
         this.telemetry = telemetryIn;
+        //Motors
         BLeft = hwmap.dcMotor.get("BLeft");
         BRight = hwmap.dcMotor.get("BRight");
         FLeft = hwmap.dcMotor.get("FLeft");
         FRight = hwmap.dcMotor.get("FRight");
+
         Latch = hwmap.dcMotor.get("Latch");
+
         SweeperExtends = hwmap.dcMotor.get("SweeperExtends");
+
         MineralRaise = hwmap.dcMotor.get("MineralRaise");
 
+        //Servos
         Sweeper = hwmap.crservo.get("Sweeper");
+
         SweeperUp = hwmap.servo.get("SweeperUp");
         SweeperDown = hwmap.servo.get("SweeperDown");
+
         MarkerDump = hwmap.servo.get("MarkerDump");
+
         MineralDump = hwmap.servo.get("MineralDump");
 
         SweeperUp.scaleRange(0, .6);
@@ -80,6 +106,7 @@ public class RobotMain {
         MarkerDump.scaleRange(.30, .83);
         MineralDump.scaleRange(.08 , .66);
 
+        //Motors
         BLeft.setPower(0);
         FLeft.setPower(0);
         BRight.setPower(0);
@@ -87,6 +114,7 @@ public class RobotMain {
         Latch.setPower(0);
         SweeperExtends.setPower(0);
         MineralRaise.setPower(0);
+        //Servos
         Sweeper.setPower(0);
 
         SweeperUp.setPosition(SERVO_LATCH_UP);
@@ -94,7 +122,6 @@ public class RobotMain {
         MarkerDump.setPosition(SERVO_LATCH_UP);
         MineralDump.setPosition(SERVO_LATCH_DOWN);
 
-        // What direction the motors operate in
         BLeft.setDirection(REVERSE);
         BRight.setDirection(FORWARD);
         FLeft.setDirection(REVERSE);
@@ -103,7 +130,6 @@ public class RobotMain {
         SweeperExtends.setDirection(FORWARD);
         MineralRaise.setDirection(FORWARD);
 
-        // When the motor has zero power, have it break
         FRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -111,6 +137,36 @@ public class RobotMain {
         Latch.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         SweeperExtends.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         MineralRaise.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        BLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        FLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        FRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        Latch.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Latch.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        SweeperExtends.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        SweeperExtends.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        MineralRaise.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        MineralRaise.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+//        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+//        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+//        parameters.loggingEnabled      = true;
+//        parameters.loggingTag          = "IMU";
+//        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+
+        imu = hwmap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
+
+        roboterror = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        gravity = imu.getGravity();
+
     }
 
     public void RobotStuff (float speed, float direction, float strafe) {
