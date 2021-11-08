@@ -14,8 +14,7 @@ public class ImportantStuff {
     private Telemetry telemetry;
     private HardwareMap HWMap = null;
 
-    RobotMain robotStuff = new RobotMain();
-
+    SkystoneBot robotStuff = new SkystoneBot();
 
     public void init(HardwareMap Map, Telemetry telemetry) {
         HWMap = Map;
@@ -24,6 +23,6 @@ public class ImportantStuff {
     }
 
     public void stop() {
-        robotStuff.stopAll();
+        robotStuff.stop();
     }
 }
