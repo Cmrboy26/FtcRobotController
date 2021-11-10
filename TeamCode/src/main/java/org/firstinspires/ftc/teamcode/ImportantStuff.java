@@ -14,7 +14,7 @@ public class ImportantStuff {
     private Telemetry telemetry;
     private HardwareMap HWMap = null;
 
-    SkystoneBot robotStuff = new SkystoneBot();
+    EightNineRobot robotStuff = new EightNineRobot();
 
     public void init(HardwareMap Map, Telemetry telemetry) {
         HWMap = Map;
