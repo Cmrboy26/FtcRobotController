@@ -5,12 +5,16 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import static com.qualcomm.robotcore.util.Range.scale;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "RoverAlanbot" , group = "TOComp")
 
 
 public class RoverAlanbot extends OpMode {
     ImportantStuff robot = new ImportantStuff();
 
+    //int MineralDumpDebounce = 0;
+    boolean MineralDumpPressed;
 
     @Override
     public void init() {
@@ -42,18 +46,36 @@ public class RoverAlanbot extends OpMode {
         }
         else if (gamepad1.dpad_down){
             robot.robotStuff.MineralRaise.setPower(-1);
+            telemetry.update();
         }
         else {
             robot.robotStuff.MineralRaise.setPower(0);
         }
 
-        //Mineral dump
+        // Mineral dump
+        // Old Code \/
         if (gamepad1.y){
             robot.robotStuff.MineralDump.setPosition(robot.robotStuff.SERVO_LATCH_UP);
         }
         else if (gamepad1.a){
             robot.robotStuff.MineralDump.setPosition(robot.robotStuff.SERVO_LATCH_DOWN);
         }
+        /*if(gamepad1.a || gamepad1.y) {
+            if(!MineralDumpPressed) {
+                MineralDumpPressed = true;
+                if (robot.robotStuff.MineralDump.getPosition() == (robot.robotStuff.SERVO_LATCH_DOWN)) {
+                    robot.robotStuff.MineralDump.setPosition(robot.robotStuff.SERVO_LATCH_UP);
+                } else {
+                    robot.robotStuff.MineralDump.setPosition(robot.robotStuff.SERVO_LATCH_DOWN);
+                }
+                telemetry.addData("MineralDumpPressed", MineralDumpPressed);
+                telemetry.addData("MineralDumpPos", +robot.robotStuff.MineralDump.getPosition());
+                telemetry.update();
+                // TODO Double check this
+            }
+        } else if(!MineralDumpPressed && !(gamepad1.a || gamepad1.y)){
+            MineralDumpPressed = false;
+        }*/
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DRIVER BREAK~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -131,6 +153,12 @@ public class RoverAlanbot extends OpMode {
         else {
             robot.robotStuff.Latch.setPower(0);
         }
+
+        telemetry.addData("AngularOrientation", robot.robotStuff.imu.getAngularOrientation());
+        telemetry.addData("AngularVelocityX", robot.robotStuff.imu.getAngularVelocity().xRotationRate);
+        telemetry.addData("AngularVelocityY", robot.robotStuff.imu.getAngularVelocity().yRotationRate);
+        telemetry.addData("AngularVelocityZ", robot.robotStuff.imu.getAngularVelocity().zRotationRate);
+        telemetry.update();
 
     }
 }

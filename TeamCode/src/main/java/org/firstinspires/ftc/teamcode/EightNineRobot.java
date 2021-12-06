@@ -20,6 +20,7 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 import static com.qualcomm.robotcore.util.Range.scale;
 
 public class EightNineRobot {
+
     private Telemetry telemetry = null;
     //Drive Motors
     public DcMotor BLeft = null;
@@ -151,13 +152,19 @@ public class EightNineRobot {
         imu = hwmap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
 
-
         roboterror = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         gravity = imu.getGravity();
 
     }
 
-    public void loop() {}
+    public void loop() {
+        // probably get rid of this eventually
+        /*if(extraDebugMode) {
+            telemetry.addData("SweeperExtendsPosition",SweeperExtends.getCurrentPosition());
+            telemetry.addData("LatchPosition", Latch.getCurrentPosition());
+            telemetry.update();
+        }*/
+    }
 
     public void start() {
     }
